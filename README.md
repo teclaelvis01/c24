@@ -101,4 +101,58 @@ To run specific test suites:
 
 ## License
 
-This project is licensed under the MIT License. 
+This project is licensed under the MIT License.
+
+# Symfony 7.2 Docker Development Environment
+
+Este proyecto proporciona un entorno de desarrollo Docker para Symfony 7.2 con PHP 8.2, MySQL 8.0 y Nginx.
+
+## Requisitos
+
+- Docker
+- Docker Compose
+- VS Code (opcional, para usar devcontainer)
+
+## Configuración
+
+1. Clona este repositorio
+2. Abre el proyecto en VS Code
+3. Si usas VS Code, presiona F1 y selecciona "Dev Containers: Reopen in Container"
+4. Si no usas VS Code, ejecuta:
+   ```bash
+   docker-compose up -d
+   ```
+
+## Acceso
+
+- Aplicación: http://localhost:8080
+- MySQL: localhost:3306
+  - Usuario: symfony
+  - Contraseña: symfony
+  - Base de datos: symfony
+- API: https://n24-api.elvisreyes.com/
+  - prueba online de la API
+
+## Comandos útiles
+
+```bash
+# Entrar al contenedor PHP
+docker-compose exec php bash
+
+# Instalar dependencias
+composer install
+
+# Crear una nueva entidad
+php bin/console make:entity
+
+# Actualizar la base de datos
+php bin/console doctrine:schema:update --force
+```
+
+## Estructura del proyecto
+
+- `.devcontainer/`: Configuración de Docker y VS Code
+- `public/`: Punto de entrada de la aplicación
+- `src/`: Código fuente de la aplicación
+- `config/`: Configuraciones de Symfony
+- `var/`: Archivos temporales y caché 
