@@ -1,0 +1,18 @@
+{
+    "name": "Symfony 7.2 Development",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "php-fpm",
+    "workspaceFolder": "/var/www/html",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "bmewburn.vscode-intelephense-client",
+                "xdebug.php-debug",
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "streetsidesoftware.code-spell-checker"
+            ]
+        }
+    },
+    "forwardPorts": [8080, 3306]
+} 
