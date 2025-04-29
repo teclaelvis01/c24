@@ -26,6 +26,12 @@ class CreditCardManualEdit
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $logoUrl;
+
+    #[ORM\Column(type: 'string', length: 500)]
+    private string $deepLink;
+
     #[ORM\Embedded(class: Money::class, columnPrefix: 'incentive_amount_')]
     private ?Money $incentiveAmount = null;
 
@@ -108,4 +114,27 @@ class CreditCardManualEdit
     {
         return $this->updatedAt;
     }
+
+    public function getLogoUrl(): string
+    {
+        return $this->logoUrl;
+    }
+
+    public function getDeepLink(): string
+    {
+        return $this->deepLink;
+    }
+
+    public function setDeepLink(string $deepLink): void
+    {
+        $this->deepLink = $deepLink;
+        $this->updatedAt = new \DateTime();
+    }
+
+    public function setLogoUrl(string $logoUrl): void
+    {
+        $this->logoUrl = $logoUrl;
+        $this->updatedAt = new \DateTime();
+    }
+
 } 

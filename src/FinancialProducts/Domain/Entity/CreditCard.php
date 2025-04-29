@@ -162,4 +162,14 @@ class CreditCard
     {
         $this->cost = $cost;
     }
+
+    public function setLogoUrl(string $logoUrl): void
+    {
+        $this->logoUrl = $logoUrl;
+    }
+
+    public function setDeepLink(string $deepLink): void
+    {
+        $this->deepLink = $deepLink;
+    }
 }

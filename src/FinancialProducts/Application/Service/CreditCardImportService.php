@@ -39,14 +39,14 @@ class CreditCardImportService
             try {
                 $existingCard = $this->creditCardRepository->findByExternalProductId($creditCard->getExternalProductId());
 
-                // Obtener o crear el banco
+                // Get or create the bank
                 $bank = $this->bankService->findOrCreateBank(
                     new BankId($creditCard->getBank()->getExternalBankId()),
                     new BankName($creditCard->getBank()->getName())
                 );
 
                 if (!$existingCard) {
-                    // Crear una nueva tarjeta con el banco
+                    // create a new card with the bank
                     $newCard = new CreditCard(
                         new ProductId((int)$creditCard->getExternalProductId()),
                         new ProductTitle($creditCard->getTitle()),
@@ -60,22 +60,19 @@ class CreditCardImportService
                         $bank
                     );
                     $this->creditCardRepository->save($newCard);
+                    $this->manualEditService->updateFromCreditCard($newCard);
                     continue;
                 }
 
-                // Actualizar la tarjeta existente
-                $existingCard->setBank($bank);
-                
-                $manualEdits = $this->manualEditService->getCombinedData($existingCard);
-                
-                $existingCard->setTitle($manualEdits['title'] ?? $creditCard->getTitle());
-                $existingCard->setDescription($manualEdits['description'] ?? $creditCard->getDescription());
-                $existingCard->setIncentiveAmount($manualEdits['incentiveAmount'] ?? $creditCard->getIncentiveAmount());
-                $existingCard->setCost($manualEdits['cost'] ?? $creditCard->getCost());
-
+                // Update the card
+                $existingCard->setBank($bank);                
                 $this->creditCardRepository->save($existingCard);
+
+                // Update or create the manual edit
+                $this->manualEditService->updateFromCreditCard($existingCard);
+
             } catch (\Exception $e) {
-                error_log('Error importando tarjeta de crédito: ' . $e->getMessage());
+                error_log('Error when importing credit card: ' . $e->getMessage());
                 continue;
             }
         }
