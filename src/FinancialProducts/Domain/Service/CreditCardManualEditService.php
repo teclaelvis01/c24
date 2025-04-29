@@ -113,56 +113,53 @@ class CreditCardManualEditService
         
         if (!$manualEdit) {
             // If it doesn't exist, create a new one with the data of the card
-            $this->editCreditCard(
-                $creditCard,
-                $creditCard->getTitle(),
-                $creditCard->getDescription(),
-                $creditCard->getIncentiveAmount(),
-                $creditCard->getCost(),
-                $creditCard->getLogoUrl(),
-                $creditCard->getDeepLink()
-            );
+            $manualEdit = new CreditCardManualEdit($creditCard);
+            $manualEdit->setTitle($creditCard->getTitle());
+            $manualEdit->setDescription($creditCard->getDescription());
+            $manualEdit->setIncentiveAmount($creditCard->getIncentiveAmount());
+            $manualEdit->setCost($creditCard->getCost());
+            $manualEdit->setLogoUrl($creditCard->getLogoUrl());
+            $manualEdit->setDeepLink($creditCard->getDeepLink());
+            $this->manualEditRepository->save($manualEdit);
             return;
         }
 
         // If it exists, update only the fields that are empty
-        $updates = [];
+        $hasUpdates = false;
         
         if ($manualEdit->getTitle() === null || $manualEdit->getTitle() === '') {
-            $updates['title'] = $creditCard->getTitle();
+            $manualEdit->setTitle($creditCard->getTitle());
+            $hasUpdates = true;
         }
         
         if ($manualEdit->getDescription() === null || $manualEdit->getDescription() === '') {
-            $updates['description'] = $creditCard->getDescription();
+            $manualEdit->setDescription($creditCard->getDescription());
+            $hasUpdates = true;
         }
         
         if ($manualEdit->getIncentiveAmount() === null) {
-            $updates['incentiveAmount'] = $creditCard->getIncentiveAmount();
+            $manualEdit->setIncentiveAmount($creditCard->getIncentiveAmount());
+            $hasUpdates = true;
         }
         
         if ($manualEdit->getCost() === null) {
-            $updates['cost'] = $creditCard->getCost();
+            $manualEdit->setCost($creditCard->getCost());
+            $hasUpdates = true;
         }
         
         if ($manualEdit->getLogoUrl() === null || $manualEdit->getLogoUrl() === '') {
-            $updates['logoUrl'] = $creditCard->getLogoUrl();
+            $manualEdit->setLogoUrl($creditCard->getLogoUrl());
+            $hasUpdates = true;
         }
         
         if ($manualEdit->getDeepLink() === null || $manualEdit->getDeepLink() === '') {
-            $updates['deepLink'] = $creditCard->getDeepLink();
+            $manualEdit->setDeepLink($creditCard->getDeepLink());
+            $hasUpdates = true;
         }
         
-        // If there are fields to update, proceed with the update
-        if (!empty($updates)) {
-            $this->editCreditCard(
-                $creditCard,
-                $updates['title'] ?? null,
-                $updates['description'] ?? null,
-                $updates['incentiveAmount'] ?? null,
-                $updates['cost'] ?? null,
-                $updates['logoUrl'] ?? null,
-                $updates['deepLink'] ?? null
-            );
+        // If there are fields to update, save the changes
+        if ($hasUpdates) {
+            $this->manualEditRepository->save($manualEdit);
         }
     }
 } 

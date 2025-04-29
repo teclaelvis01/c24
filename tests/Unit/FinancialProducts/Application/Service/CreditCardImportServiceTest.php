@@ -78,12 +78,18 @@ class CreditCardImportServiceTest extends Unit
 
         $this->creditCardRepository->expects($this->once())
             ->method('save')
-            ->with($this->callback(function($card) {
-                return $card instanceof CreditCard;
+            ->with($this->callback(function($newCard) use ($bank) {
+                return $newCard instanceof CreditCard
+                    && $newCard->getExternalProductId() === '123'
+                    && $newCard->getBank() === $bank;
             }));
 
-        $this->manualEditService->expects($this->never())
-            ->method('getCombinedData');
+        $this->manualEditService->expects($this->once())
+            ->method('updateFromCreditCard')
+            ->with($this->callback(function($newCard) {
+                return $newCard instanceof CreditCard
+                    && $newCard->getExternalProductId() === '123';
+            }));
 
         $this->importService->importCreditCards();
     }
@@ -129,40 +135,16 @@ class CreditCardImportServiceTest extends Unit
             )
             ->willReturn($bank);
 
-        $combinedData = [
-            'title' => 'Updated Title',
-            'description' => 'Updated Description',
-            'incentiveAmount' => new Money(100.50),
-            'cost' => new Money(50.00)
-        ];
-
-        $this->manualEditService->expects($this->once())
-            ->method('getCombinedData')
-            ->with($existingCard)
-            ->willReturn($combinedData);
-
         $existingCard->expects($this->once())
             ->method('setBank')
             ->with($bank);
 
-        $existingCard->expects($this->once())
-            ->method('setTitle')
-            ->with('Updated Title');
-
-        $existingCard->expects($this->once())
-            ->method('setDescription')
-            ->with('Updated Description');
-
-        $existingCard->expects($this->once())
-            ->method('setIncentiveAmount')
-            ->with($combinedData['incentiveAmount']);
-
-        $existingCard->expects($this->once())
-            ->method('setCost')
-            ->with($combinedData['cost']);
-
         $this->creditCardRepository->expects($this->once())
             ->method('save')
+            ->with($existingCard);
+
+        $this->manualEditService->expects($this->once())
+            ->method('updateFromCreditCard')
             ->with($existingCard);
 
         $this->importService->importCreditCards();
@@ -220,51 +202,35 @@ class CreditCardImportServiceTest extends Unit
                 return $bankId->getValue() === 456 ? $bank1 : $bank2;
             });
 
-        $combinedData = [
-            'title' => 'Updated Title',
-            'description' => 'Updated Description',
-            'incentiveAmount' => new Money(100.50),
-            'cost' => new Money(50.00)
-        ];
-
-        $this->manualEditService->expects($this->once())
-            ->method('getCombinedData')
-            ->with($existingCard)
-            ->willReturn($combinedData);
-
         $existingCard->expects($this->once())
             ->method('setBank')
             ->with($bank2);
 
-        $existingCard->expects($this->once())
-            ->method('setTitle')
-            ->with('Updated Title');
-
-        $existingCard->expects($this->once())
-            ->method('setDescription')
-            ->with('Updated Description');
-
-        $existingCard->expects($this->once())
-            ->method('setIncentiveAmount')
-            ->with($combinedData['incentiveAmount']);
-
-        $existingCard->expects($this->once())
-            ->method('setCost')
-            ->with($combinedData['cost']);
-
+        $saveCalls = 0;
         $this->creditCardRepository->expects($this->exactly(2))
             ->method('save')
-            ->willReturnCallback(function($card) use ($existingCard) {
-                static $callCount = 0;
-                $callCount++;
-                
-                if ($callCount === 1) {
+            ->willReturnCallback(function($card) use (&$saveCalls, $bank1, $existingCard) {
+                $saveCalls++;
+                if ($saveCalls === 1) {
                     $this->assertInstanceOf(CreditCard::class, $card);
+                    $this->assertEquals('123', $card->getExternalProductId());
+                    $this->assertSame($bank1, $card->getBank());
                 } else {
                     $this->assertSame($existingCard, $card);
                 }
-                
-                return null;
+            });
+
+        $updateCalls = 0;
+        $this->manualEditService->expects($this->exactly(2))
+            ->method('updateFromCreditCard')
+            ->willReturnCallback(function($card) use (&$updateCalls, $existingCard) {
+                $updateCalls++;
+                if ($updateCalls === 1) {
+                    $this->assertInstanceOf(CreditCard::class, $card);
+                    $this->assertEquals('123', $card->getExternalProductId());
+                } else {
+                    $this->assertSame($existingCard, $card);
+                }
             });
 
         $this->importService->importCreditCards();

@@ -181,4 +181,137 @@ class CreditCardManualEditServiceTest extends Unit
         $this->assertEquals($originalIncentiveAmount, $combinedData['incentiveAmount']);
         $this->assertEquals($manualCost, $combinedData['cost']);
     }
+
+    public function testUpdateFromCreditCardCreatesNewManualEdit(): void
+    {
+        $creditCard = $this->createMock(CreditCard::class);
+        $creditCard->method('getTitle')->willReturn('Test Title');
+        $creditCard->method('getDescription')->willReturn('Test Description');
+        $creditCard->method('getIncentiveAmount')->willReturn(new Money(100.00));
+        $creditCard->method('getCost')->willReturn(new Money(50.00));
+        $creditCard->method('getLogoUrl')->willReturn('http://test.com/logo.png');
+        $creditCard->method('getDeepLink')->willReturn('http://test.com/deeplink');
+
+        $this->manualEditRepository->expects($this->once())
+            ->method('findByCreditCard')
+            ->with($creditCard)
+            ->willReturn(null);
+
+        $this->manualEditRepository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(function ($manualEdit) use ($creditCard) {
+                return $manualEdit instanceof CreditCardManualEdit
+                    && $manualEdit->getCreditCard() === $creditCard
+                    && $manualEdit->getTitle() === 'Test Title'
+                    && $manualEdit->getDescription() === 'Test Description'
+                    && $manualEdit->getIncentiveAmount()->getAmount() === 100.00
+                    && $manualEdit->getCost()->getAmount() === 50.00
+                    && $manualEdit->getLogoUrl() === 'http://test.com/logo.png'
+                    && $manualEdit->getDeepLink() === 'http://test.com/deeplink';
+            }));
+
+        $this->manualEditService->updateFromCreditCard($creditCard);
+    }
+
+    public function testUpdateFromCreditCardUpdatesEmptyFields(): void
+    {
+        $creditCard = $this->createMock(CreditCard::class);
+        $creditCard->method('getTitle')->willReturn('New Title');
+        $creditCard->method('getDescription')->willReturn('New Description');
+        $creditCard->method('getIncentiveAmount')->willReturn(new Money(200.00));
+        $creditCard->method('getCost')->willReturn(new Money(100.00));
+        $creditCard->method('getLogoUrl')->willReturn('http://new.com/logo.png');
+        $creditCard->method('getDeepLink')->willReturn('http://new.com/deeplink');
+
+        $existingManualEdit = $this->createMock(CreditCardManualEdit::class);
+        $existingManualEdit->method('getTitle')->willReturn('');
+        $existingManualEdit->method('getDescription')->willReturn(null);
+        $existingManualEdit->method('getIncentiveAmount')->willReturn(null);
+        $existingManualEdit->method('getCost')->willReturn(new Money(50.00));
+        $existingManualEdit->method('getLogoUrl')->willReturn('');
+        $existingManualEdit->method('getDeepLink')->willReturn('');
+
+        $this->manualEditRepository->expects($this->once())
+            ->method('findByCreditCard')
+            ->with($creditCard)
+            ->willReturn($existingManualEdit);
+
+        $existingManualEdit->expects($this->once())
+            ->method('setTitle')
+            ->with('New Title');
+
+        $existingManualEdit->expects($this->once())
+            ->method('setDescription')
+            ->with('New Description');
+
+        $existingManualEdit->expects($this->once())
+            ->method('setIncentiveAmount')
+            ->with($this->callback(function($money) {
+                return $money instanceof Money && $money->getAmount() === 200.00;
+            }));
+
+        $existingManualEdit->expects($this->never())
+            ->method('setCost');
+
+        $existingManualEdit->expects($this->once())
+            ->method('setLogoUrl')
+            ->with('http://new.com/logo.png');
+
+        $existingManualEdit->expects($this->once())
+            ->method('setDeepLink')
+            ->with('http://new.com/deeplink');
+
+        $this->manualEditRepository->expects($this->once())
+            ->method('save')
+            ->with($existingManualEdit);
+
+        $this->manualEditService->updateFromCreditCard($creditCard);
+    }
+
+    public function testUpdateFromCreditCardDoesNotUpdateNonEmptyFields(): void
+    {
+        $creditCard = $this->createMock(CreditCard::class);
+        $creditCard->method('getTitle')->willReturn('New Title');
+        $creditCard->method('getDescription')->willReturn('New Description');
+        $creditCard->method('getIncentiveAmount')->willReturn(new Money(200.00));
+        $creditCard->method('getCost')->willReturn(new Money(100.00));
+        $creditCard->method('getLogoUrl')->willReturn('http://new.com/logo.png');
+        $creditCard->method('getDeepLink')->willReturn('http://new.com/deeplink');
+
+        $existingManualEdit = $this->createMock(CreditCardManualEdit::class);
+        $existingManualEdit->method('getTitle')->willReturn('Existing Title');
+        $existingManualEdit->method('getDescription')->willReturn('Existing Description');
+        $existingManualEdit->method('getIncentiveAmount')->willReturn(new Money(150.00));
+        $existingManualEdit->method('getCost')->willReturn(new Money(75.00));
+        $existingManualEdit->method('getLogoUrl')->willReturn('http://existing.com/logo.png');
+        $existingManualEdit->method('getDeepLink')->willReturn('http://existing.com/deeplink');
+
+        $this->manualEditRepository->expects($this->once())
+            ->method('findByCreditCard')
+            ->with($creditCard)
+            ->willReturn($existingManualEdit);
+
+        $existingManualEdit->expects($this->never())
+            ->method('setTitle');
+
+        $existingManualEdit->expects($this->never())
+            ->method('setDescription');
+
+        $existingManualEdit->expects($this->never())
+            ->method('setIncentiveAmount');
+
+        $existingManualEdit->expects($this->never())
+            ->method('setCost');
+
+        $existingManualEdit->expects($this->never())
+            ->method('setLogoUrl');
+
+        $existingManualEdit->expects($this->never())
+            ->method('setDeepLink');
+
+        $this->manualEditRepository->expects($this->never())
+            ->method('save');
+
+        $this->manualEditService->updateFromCreditCard($creditCard);
+    }
 } 
