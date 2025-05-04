@@ -22,18 +22,6 @@ interface CreditCardRepositoryInterface
     
     public function findAll(): array;
     
-    /**
-     * Find paginated credit cards
-     *
-     * @param integer $page
-     * @param integer $limit
-     * @param string $sortBy
-     * @param string $sortOrder
-     * @return array CreditCard[]
-     */
-    public function findPaginated(int $page = 1, int $limit = 10, string $sortBy = 'title', string $sortOrder = 'asc'): array;
-    
-    public function countAll(): int;
 
     /**
      * Find the latest manual edit for a credit card

@@ -36,9 +36,22 @@ services:
 
     App\FinancialProducts\Application\Mapper\CreditCardMapperInterface:
         alias: App\FinancialProducts\Application\Mapper\CreditCardMapper
+    
+    App\FinancialProducts\Application\Service\CreditCardListService:
+        arguments:
+            $creditCardRepository: '@App\FinancialProducts\Domain\Repository\CreditCardManualEditRepositoryInterface'
+            # $creditCardResponseMapper: '@App\FinancialProducts\Application\Mapper\CreditCardEditResponseMapper'
 
     App\FinancialProducts\Domain\Repository\CreditCardRepositoryInterface:
         alias: App\FinancialProducts\Infrastructure\Repository\DoctrineCreditCardRepository
+
+
+
+    App\FinancialProducts\Domain\Repository\CreditCardPaginatedRepositoryInterface:
+        alias: App\FinancialProducts\Infrastructure\Repository\DoctrineCreditCardRepository
+
+    App\FinancialProducts\Domain\Repository\CreditCardManualEditRepositoryInterface:
+        alias: App\FinancialProducts\Infrastructure\Repository\DoctrineCreditCardManualEditRepository
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

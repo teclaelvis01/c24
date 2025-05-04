@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\FinancialProducts\Application\Service;
 
-use App\FinancialProducts\Domain\Repository\CreditCardRepositoryInterface;
-use App\FinancialProducts\Application\Mapper\CreditCardResponseMapper;
+use App\FinancialProducts\Domain\Repository\CreditCardPaginatedRepositoryInterface;
+use App\FinancialProducts\Application\Mapper\CreditCardEditResponseMapper;
 use App\FinancialProducts\Application\DTO\CreditCardResponseDTO;
 use App\FinancialProducts\Application\DTO\MoneyDTO;
 use App\FinancialProducts\Domain\Entity\CreditCardManualEdit;
-use App\FinancialProducts\Domain\Entity\CreditCard;
 
 class CreditCardListService
 {
     public function __construct(
-        private readonly CreditCardRepositoryInterface $creditCardRepository,
-        private readonly CreditCardResponseMapper $mapper
+        private readonly CreditCardPaginatedRepositoryInterface $creditCardRepository,
+        private readonly CreditCardEditResponseMapper $mapper
     ) {}
 
     /**
@@ -33,14 +32,6 @@ class CreditCardListService
         $mappedCards = array_map(
             function($card) {
                 $dto = $this->mapper->toDTO($card);
-                
-                // Buscar manual edits para esta tarjeta
-                $manualEdit = $this->creditCardRepository->findLatestManualEdit($card);
-                
-                if ($manualEdit) {
-                    $dto = $this->createUpdatedDTO($dto, $manualEdit);
-                }
-                
                 return $dto;
             },
             $cards
@@ -65,14 +56,14 @@ class CreditCardListService
         $incentiveAmount = $manualEdit->getIncentiveAmount() 
             ? new MoneyDTO(
                 $manualEdit->getIncentiveAmount()->getAmount(),
-                $manualEdit->getIncentiveAmount()->getCurrency()->getCode()
+                $manualEdit->getIncentiveAmount()->getCurrency()->__toString()
             )
             : $originalDTO->incentiveAmount;
             
         $cost = $manualEdit->getCost()
             ? new MoneyDTO(
                 $manualEdit->getCost()->getAmount(),
-                $manualEdit->getCost()->getCurrency()->getCode()
+                $manualEdit->getCost()->getCurrency()->__toString()
             )
             : $originalDTO->cost;
 

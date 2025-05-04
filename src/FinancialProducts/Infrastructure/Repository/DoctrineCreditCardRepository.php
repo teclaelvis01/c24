@@ -6,11 +6,12 @@ namespace App\FinancialProducts\Infrastructure\Repository;
 
 use Doctrine\ORM\EntityManagerInterface;
 use App\FinancialProducts\Domain\Repository\CreditCardRepositoryInterface;
+use App\FinancialProducts\Domain\Repository\CreditCardPaginatedRepositoryInterface;
 use App\FinancialProducts\Domain\Entity\CreditCard;
 use App\FinancialProducts\Domain\Entity\Bank;
 use App\FinancialProducts\Domain\Entity\CreditCardManualEdit;
 
-class DoctrineCreditCardRepository implements CreditCardRepositoryInterface
+class DoctrineCreditCardRepository implements CreditCardRepositoryInterface, CreditCardPaginatedRepositoryInterface
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager
