@@ -115,12 +115,12 @@ class CreditCardManualEdit
         return $this->updatedAt;
     }
 
-    public function getLogoUrl(): string
+    public function getLogoUrl(): ?string
     {
         return $this->logoUrl;
     }
 
-    public function getDeepLink(): string
+    public function getDeepLink(): ?string
     {
         return $this->deepLink;
     }
