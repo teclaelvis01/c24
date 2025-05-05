@@ -125,13 +125,13 @@ class CreditCardManualEdit
         return $this->deepLink;
     }
 
-    public function setDeepLink(string $deepLink): void
+    public function setDeepLink(?string $deepLink): void
     {
         $this->deepLink = $deepLink;
         $this->updatedAt = new \DateTime();
     }
 
-    public function setLogoUrl(string $logoUrl): void
+    public function setLogoUrl(?string $logoUrl): void
     {
         $this->logoUrl = $logoUrl;
         $this->updatedAt = new \DateTime();
