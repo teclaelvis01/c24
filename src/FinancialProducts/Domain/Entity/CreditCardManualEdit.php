@@ -26,11 +26,11 @@ class CreditCardManualEdit
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $logoUrl;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $logoUrl = null;
 
-    #[ORM\Column(type: 'string', length: 500)]
-    private string $deepLink;
+    #[ORM\Column(type: 'string', length: 500, nullable: true)]
+    private ?string $deepLink = null;
 
     #[ORM\Embedded(class: Money::class, columnPrefix: 'incentive_amount_')]
     private ?Money $incentiveAmount = null;
